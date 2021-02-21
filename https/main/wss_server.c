@@ -84,7 +84,6 @@ static esp_err_t root_get_handler(httpd_req_t *req)
 {
     httpd_resp_set_type(req, "text/html");
     httpd_resp_send(req, "<h1>Hello Secure World!</h1>", HTTPD_RESP_USE_STRLEN);
-
     return ESP_OK;
 }
 
@@ -267,10 +266,6 @@ void wss_main(void)
 {
     static httpd_handle_t server = NULL;
 
-    ESP_ERROR_CHECK(nvs_flash_init());
-    ESP_ERROR_CHECK(esp_netif_init());
-    ESP_ERROR_CHECK(esp_event_loop_create_default());
-
     /* 
      * Register event handlers to start server when Wi-Fi or Ethernet is connected,
      * and stop server when disconnection happens.
@@ -294,5 +289,5 @@ void wss_main(void)
     /* This function demonstrates periodic sending Websocket messages
      * to all connected clients to this server
      */
-    wss_server_send_messages(&server);
+    //wss_server_send_messages(&server);
 }
