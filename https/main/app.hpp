@@ -1,1 +1,2 @@
-extern "C" void wss_main();
+extern "C" void wss_server();
+

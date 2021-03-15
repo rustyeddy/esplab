@@ -108,7 +108,9 @@ void advanced_ota_example_task(void *pvParameter)
 
     esp_https_ota_config_t ota_config = {
         .http_config = &config,
-        .http_client_init_cb = _http_client_init_cb, // Register a callback to be invoked after esp_http_client is initialized
+
+	// Register a callback to be invoked after esp_http_client is initialized
+        .http_client_init_cb = _http_client_init_cb,
     };
 
     esp_https_ota_handle_t https_ota_handle = NULL;
