@@ -363,12 +363,14 @@ static mdf_err_t event_loop_cb(mdf_event_loop_t event, void *ctx)
 void app_main()
 {
     mwifi_init_config_t cfg   = MWIFI_INIT_CONFIG_DEFAULT();
+    /*
     mwifi_config_t config     = {
         .router_ssid     = CONFIG_ROUTER_SSID,
         .router_password = CONFIG_ROUTER_PASSWORD,
         .mesh_id         = CONFIG_MESH_ID,
         .mesh_password   = CONFIG_MESH_PASSWORD,
     };
+    */
 
     /**
      * @brief Set the log level for serial port printing.

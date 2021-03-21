@@ -380,7 +380,7 @@ mdf_err_t mesh_mqtt_read(mesh_mqtt_data_t **request, TickType_t wait_ticks)
     return MDF_OK;
 }
 
-mdf_err_t mesh_mqtt_start(char *url)
+mdf_err_t mesh_mqtt_start(const char *url)
 {
     MDF_PARAM_CHECK(url);
     MDF_ERROR_CHECK(g_mesh_mqtt.client != NULL, MDF_ERR_INVALID_STATE, "MQTT client is already running");

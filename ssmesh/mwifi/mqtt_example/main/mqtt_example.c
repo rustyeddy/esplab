@@ -11,12 +11,11 @@
 // WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
 // See the License for the specific language governing permissions and
 // limitations under the License.
-
 #include "mdf_common.h"
 #include "mesh_mqtt_handle.h"
 #include "mwifi.h"
 
-#define MEMORY_DEBUG
+//#define MEMORY_DEBUG
 
 static const char *TAG = "mqtt_examples";
 esp_netif_t *sta_netif;
@@ -44,7 +43,6 @@ void root_write_task(void *arg)
         MDF_ERROR_GOTO(ret != MDF_OK, MEM_FREE, "<%s> mwifi_root_read", mdf_err_to_name(ret));
 
         ret = mesh_mqtt_write(src_addr, data, size, MESH_MQTT_DATA_JSON);
-
         MDF_ERROR_GOTO(ret != MDF_OK, MEM_FREE, "<%s> mesh_mqtt_publish", mdf_err_to_name(ret));
 
 MEM_FREE:
@@ -75,7 +73,6 @@ void root_read_task(void *arg)
          * @brief Recv data from mqtt data queue, and forward to special device.
          */
         ret = mesh_mqtt_read(&request, pdMS_TO_TICKS(500));
-
         if (ret != MDF_OK) {
             continue;
         }
@@ -97,7 +94,7 @@ MEM_FREE:
 static void node_read_task(void *arg)
 {
     mdf_err_t ret = MDF_OK;
-    char *data = MDF_MALLOC(MWIFI_PAYLOAD_LEN);
+    char *data = (char *) MDF_MALLOC(MWIFI_PAYLOAD_LEN);
     size_t size = MWIFI_PAYLOAD_LEN;
     mwifi_data_type_t data_type = { 0x0 };
     uint8_t src_addr[MWIFI_ADDR_LEN] = { 0x0 };
@@ -166,7 +163,7 @@ static void node_write_task(void *arg)
 static void print_system_info_timercb(void *timer)
 {
     uint8_t primary = 0;
-    wifi_second_chan_t second = 0;
+    wifi_second_chan_t second = (wifi_second_chan_t) 0;
     mesh_addr_t parent_bssid = { 0 };
     uint8_t sta_mac[MWIFI_ADDR_LEN] = { 0 };
     wifi_sta_list_t wifi_sta_list = { 0x0 };
@@ -233,7 +230,10 @@ static mdf_err_t wifi_init()
  */
 static mdf_err_t event_loop_cb(mdf_event_loop_t event, void *ctx)
 {
+    
     MDF_LOGI("event_loop_cb, event: %d", event);
+    char *mqtturl;
+    mdf_err_t err;
 
     switch (event) {
         case MDF_EVENT_MWIFI_STARTED:
@@ -263,8 +263,7 @@ static mdf_err_t event_loop_cb(mdf_event_loop_t event, void *ctx)
             MDF_LOGI("MDF_EVENT_MWIFI_ROUTING_TABLE_REMOVE, total_num: %d", esp_mesh_get_total_node_num());
 
             if (esp_mesh_is_root() && mwifi_get_root_status()) {
-                mdf_err_t err = mesh_mqtt_update_topo();
-
+                err = mesh_mqtt_update_topo();
                 if (err != MDF_OK) {
                     MDF_LOGE("Update topo failed");
                 }
@@ -272,10 +271,11 @@ static mdf_err_t event_loop_cb(mdf_event_loop_t event, void *ctx)
 
             break;
 
-        case MDF_EVENT_MWIFI_ROOT_GOT_IP: {
+        case MDF_EVENT_MWIFI_ROOT_GOT_IP: 
             MDF_LOGI("Root obtains the IP address. It is posted by LwIP stack automatically");
 
-            mesh_mqtt_start(CONFIG_MQTT_URL);
+	    mqtturl = CONFIG_MQTT_URL; // XXX overcome compiler griping
+            mesh_mqtt_start(mqtturl);
 
             xTaskCreate(root_write_task, "root_write", 4 * 1024,
                         NULL, CONFIG_MDF_TASK_DEFAULT_PRIOTY, NULL);
@@ -283,11 +283,10 @@ static mdf_err_t event_loop_cb(mdf_event_loop_t event, void *ctx)
                         NULL, CONFIG_MDF_TASK_DEFAULT_PRIOTY, NULL);
 
             break;
-        }
 
         case MDF_EVENT_CUSTOM_MQTT_CONNECTED:
             MDF_LOGI("MQTT connect");
-            mdf_err_t err = mesh_mqtt_subscribe();
+	    err = mesh_mqtt_subscribe();
             if (err != MDF_OK) {
                 MDF_LOGE("Subscribe failed");
             }
@@ -311,22 +310,22 @@ static mdf_err_t event_loop_cb(mdf_event_loop_t event, void *ctx)
     return MDF_OK;
 }
 
-void app_main()
+void app_mqtt()
 {
     mwifi_init_config_t cfg = MWIFI_INIT_CONFIG_DEFAULT();
     mwifi_config_t config = {
         .router_ssid = CONFIG_ROUTER_SSID,
         .router_password = CONFIG_ROUTER_PASSWORD,
-        .mesh_id = CONFIG_MESH_ID,
         .mesh_password = CONFIG_MESH_PASSWORD,
+	.mesh_id = CONFIG_MESH_ID,
     };
 
     /**
      * @brief Set the log level for serial port printing.
      */
     esp_log_level_set("*", ESP_LOG_INFO);
-    esp_log_level_set(TAG, ESP_LOG_DEBUG);
-    esp_log_level_set("mesh_mqtt", ESP_LOG_DEBUG);
+    esp_log_level_set(TAG, ESP_LOG_INFO);
+    esp_log_level_set("mesh_mqtt", ESP_LOG_INFO);
 
     /**
      * @brief Initialize wifi mesh.
@@ -334,6 +333,7 @@ void app_main()
     MDF_ERROR_ASSERT(mdf_event_loop_init(event_loop_cb));
     MDF_ERROR_ASSERT(wifi_init());
     MDF_ERROR_ASSERT(mwifi_init(&cfg));
+
     MDF_ERROR_ASSERT(mwifi_set_config(&config));
     MDF_ERROR_ASSERT(mwifi_start());
 

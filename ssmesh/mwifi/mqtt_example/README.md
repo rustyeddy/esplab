@@ -4,7 +4,10 @@
 
 ## Overview
 
-This demo will show how to connect a device to a remote external server based on `Mwifi` APIs. The device first transfers all data through ESP-WIFI-MESH network to the root node that connects to remote server (mqtt://iot.eclipse.org) using MQTT.
+This demo will show how to connect a device to a remote external
+server based on `Mwifi` APIs. The device first transfers all data
+through ESP-WIFI-MESH network to the root node that connects to remote
+server (mqtt://iot.eclipse.org) using MQTT. 
 
 ## Hardware
 
@@ -31,7 +34,9 @@ make erase_flash flash -j5 monitor ESPBAUD=921600 ESPPORT=/dev/ttyUSB0
 
 ### Run on Your Device
 
-1. ESP-WIFI-MESH sub-device will send heartbeat information to the root node every three seconds, the information content is as follows
+1. ESP-WIFI-MESH sub-device will send heartbeat information to the
+   root node every three seconds, the information content is as
+   follows 
 
     ```json
     {
@@ -42,7 +47,14 @@ make erase_flash flash -j5 monitor ESPBAUD=921600 ESPPORT=/dev/ttyUSB0
     }
     ```
 
-    > type is the message type, self is the MAC address of the current device, parent is the MAC address of the parent node of the current device, and layer is the layer book of the current device. It is strongly recommended that developers retain this mechanism when designing MESH systems that communicate based on MQTT. In this way, it is convenient for Cloud to judge whether the device is online, and it is easy to see the complete TOPO structure of the MESH network
+    > type is the message type, self is the MAC address of the current
+    > device, parent is the MAC address of the parent node of the
+    > current device, and layer is the layer book of the current
+    > device. It is strongly recommended that developers retain this
+    > mechanism when designing MESH systems that communicate based on
+    > MQTT. In this way, it is convenient for Cloud to judge whether
+    > the device is online, and it is easy to see the complete TOPO
+    > structure of the MESH network 
 
 1. After the ESP-WIFI-MESH root node receives the data from the child node, it will forward the message from the child node to Topic: "mesh/{MAC}/toCloud" (MAC: MAC address of the root node). The content of the information is as follows
 

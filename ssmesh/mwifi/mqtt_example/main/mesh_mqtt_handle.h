@@ -22,8 +22,7 @@
  *
  */
 
-#ifndef __MESH_MQTT_HANDLE_H__
-#define __MESH_MQTT_HANDLE_H__
+#pragma once
 
 #include "mdf_common.h"
 #include "mqtt_client.h"
@@ -53,14 +52,26 @@ typedef struct {
  *     - true
  *     - false
  */
+#ifdef __cplusplus 
+extern "C" {
+#endif
 bool mesh_mqtt_is_connect();
+#ifdef __cplusplus 
+}
+#endif
 
 /**
  * @brief  Update topo to cloud
  *
  * @return  MDF_OK if success
  */
+#ifdef __cplusplus 
+extern "C" {
+#endif
 mdf_err_t mesh_mqtt_update_topo();
+#ifdef __cplusplus 
+}
+#endif
 
 /**
  * @brief  mqtt subscribe special topic according device MAC address.
@@ -69,7 +80,13 @@ mdf_err_t mesh_mqtt_update_topo();
  *     - MDF_OK
  *     - MDF_FAIL
  */
+#ifdef __cplusplus 
+extern "C" {
+#endif
 mdf_err_t mesh_mqtt_subscribe();
+#ifdef __cplusplus 
+}
+#endif
 
 /**
  * @brief  mqtt unsubscribe special topic according device MAC address.
@@ -78,7 +95,13 @@ mdf_err_t mesh_mqtt_subscribe();
  *     - MDF_OK
  *     - MDF_FAIL
  */
+#ifdef __cplusplus 
+extern "C" {
+#endif
 mdf_err_t mesh_mqtt_unsubscribe();
+#ifdef __cplusplus 
+}
+#endif
 
 /**
  * @brief  mqtt publish data to special topic
@@ -96,7 +119,13 @@ mdf_err_t mesh_mqtt_unsubscribe();
  *     - MDF_OK
  *     - MDF_FAIL
  */
+#ifdef __cplusplus 
+extern "C" {
+#endif
 mdf_err_t mesh_mqtt_write(uint8_t *addr, const char *data, size_t size, mesh_mqtt_publish_data_type_t type);
+#ifdef __cplusplus 
+}
+#endif
 
 /**
  * @brief  receive data from special topic
@@ -107,7 +136,14 @@ mdf_err_t mesh_mqtt_write(uint8_t *addr, const char *data, size_t size, mesh_mqt
  *     - MDF_OK
  *     - MDF_FAIL
  */
-mdf_err_t mesh_mqtt_read(mesh_mqtt_data_t **request, TickType_t wait_ticks);
+#ifdef __cplusplus 
+extern "C" {
+#endif
+    mdf_err_t mesh_mqtt_read(mesh_mqtt_data_t **request, TickType_t wait_ticks);
+#ifdef __cplusplus 
+}
+#endif
+
 
 /**
 * @brief  start mqtt client
@@ -118,7 +154,13 @@ mdf_err_t mesh_mqtt_read(mesh_mqtt_data_t **request, TickType_t wait_ticks);
 *     - MDF_OK
 *     - MDF_FAIL
 */
-mdf_err_t mesh_mqtt_start(char *url);
+#ifdef __cplusplus 
+extern "C" {
+#endif
+mdf_err_t mesh_mqtt_start(const char *url);
+#ifdef __cplusplus 
+}
+#endif
 
 /**
  * @brief  stop mqtt client
@@ -127,10 +169,12 @@ mdf_err_t mesh_mqtt_start(char *url);
  *     - MDF_OK
  *     - MDF_FAIL
  */
+#ifdef __cplusplus 
+extern "C" {
+#endif
 mdf_err_t mesh_mqtt_stop();
-
-#ifdef __cplusplus
+#ifdef __cplusplus 
 }
-#endif /**< _cplusplus */
+#endif
 
-#endif /**< __MESH_MQTT_HANDLE_H__ */
+
