@@ -15,6 +15,9 @@
 #include "mesh_mqtt_handle.h"
 #include "mwifi.h"
 
+#include "pins.h"
+#include "dht11.h"
+
 //#define MEMORY_DEBUG
 
 static const char *TAG = "MESH";
@@ -159,11 +162,13 @@ static void node_write_task(void *arg)
 
 static void advertise_temperature()
 {
-    printf("---------------- The temperature is cool -----------\n");
+    struct dht11_reading r = DHT11_read();
+    printf("The temperature is: status: %d - t: %d - h: %d\n", r.status, r.temperature, r.humidity);
 }
 
 static void node_write_temp(void *arg)
 {
+    DHT11_init(PIN_DHT11);
     for (;;) {
         if (!mwifi_is_connected() || !mwifi_get_root_status()) {
             vTaskDelay(500 / portTICK_RATE_MS);
@@ -358,9 +363,7 @@ void app_mqtt()
      * @brief Create node handler
      */
     xTaskCreate(node_write_task, "node_write_task", 4 * 1024, NULL, CONFIG_MDF_TASK_DEFAULT_PRIOTY, NULL);
-    xTaskCreate(node_read_task, "node_read_task", 4 * 1024, NULL, CONFIG_MDF_TASK_DEFAULT_PRIOTY, NULL);
-
-    
+    xTaskCreate(node_read_task,  "node_read_task",  4 * 1024, NULL, CONFIG_MDF_TASK_DEFAULT_PRIOTY, NULL);
     xTaskCreate(node_write_temp, "node_write_temp", 4 * 1024, NULL, CONFIG_MDF_TASK_DEFAULT_PRIOTY, NULL);
 
     TimerHandle_t timer = xTimerCreate("print_system_info", 10000 / portTICK_RATE_MS,
