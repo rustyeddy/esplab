@@ -17,7 +17,7 @@
 
 //#define MEMORY_DEBUG
 
-static const char *TAG = "mqtt_examples";
+static const char *TAG = "MESH";
 esp_netif_t *sta_netif;
 
 void root_write_task(void *arg)
@@ -155,6 +155,23 @@ static void node_write_task(void *arg)
 
     MDF_LOGW("Node task is exit");
     vTaskDelete(NULL);
+}
+
+static void advertise_temperature()
+{
+    printf("---------------- The temperature is cool -----------\n");
+}
+
+static void node_write_temp(void *arg)
+{
+    for (;;) {
+        if (!mwifi_is_connected() || !mwifi_get_root_status()) {
+            vTaskDelay(500 / portTICK_RATE_MS);
+            continue;
+        }
+	advertise_temperature();
+	vTaskDelay(500 / portTICK_RATE_MS);
+    }
 }
 
 /**
@@ -340,10 +357,11 @@ void app_mqtt()
     /**
      * @brief Create node handler
      */
-    xTaskCreate(node_write_task, "node_write_task", 4 * 1024,
-                NULL, CONFIG_MDF_TASK_DEFAULT_PRIOTY, NULL);
-    xTaskCreate(node_read_task, "node_read_task", 4 * 1024,
-                NULL, CONFIG_MDF_TASK_DEFAULT_PRIOTY, NULL);
+    xTaskCreate(node_write_task, "node_write_task", 4 * 1024, NULL, CONFIG_MDF_TASK_DEFAULT_PRIOTY, NULL);
+    xTaskCreate(node_read_task, "node_read_task", 4 * 1024, NULL, CONFIG_MDF_TASK_DEFAULT_PRIOTY, NULL);
+
+    
+    xTaskCreate(node_write_temp, "node_write_temp", 4 * 1024, NULL, CONFIG_MDF_TASK_DEFAULT_PRIOTY, NULL);
 
     TimerHandle_t timer = xTimerCreate("print_system_info", 10000 / portTICK_RATE_MS,
                                        true, NULL, print_system_info_timercb);

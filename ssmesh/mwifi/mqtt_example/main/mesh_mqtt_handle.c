@@ -98,7 +98,7 @@ static mesh_mqtt_data_t *mesh_mqtt_parse_data(const char *topic, size_t topic_si
             i++;
         }
     }
-
+    
     cJSON *type = cJSON_GetObjectItem(obj, "type");
 
     if (type == NULL || cJSON_IsString(type) != true) {
