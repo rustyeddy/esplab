@@ -421,3 +421,19 @@ mdf_err_t mesh_mqtt_stop()
 
     return MDF_OK;
 }
+
+mdf_err_t mqtt_write_data(char *topic, const char *data, size_t size)
+{
+    MDF_PARAM_CHECK(topic);
+    MDF_PARAM_CHECK(data);
+    MDF_ERROR_CHECK(size == 0, MDF_ERR_INVALID_STATE, "Size too small");
+    //MDF_ERROR_CHECK(g_mesh_mqtt.client == NULL, MDF_ERR_INVALID_STATE, "MQTT client has not started");
+    if (g_mesh_mqtt.client == NULL) {
+	return 0;
+    }
+
+    mdf_err_t ret = MDF_FAIL;
+    esp_mqtt_client_publish(g_mesh_mqtt.client, topic, data, size, 0, 0);
+    ret = MDF_OK;
+    return ret;
+}

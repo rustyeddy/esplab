@@ -178,3 +178,4 @@ mdf_err_t mesh_mqtt_stop();
 #endif
 
 
+extern mdf_err_t mqtt_write_data(char *topic, const char *data, size_t size);

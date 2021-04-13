@@ -160,23 +160,50 @@ static void node_write_task(void *arg)
     vTaskDelete(NULL);
 }
 
-static void advertise_temperature()
+static void node_env_task(void *arg)
 {
-    struct dht11_reading r = DHT11_read();
-    printf("The temperature is: status: %d - t: %d - h: %d\n", r.status, r.temperature, r.humidity);
-}
+    mdf_err_t ret = MDF_OK;
+    size_t size = 0;
+    char *data = NULL;
+    mwifi_data_type_t data_type = { 0x0 };
+    uint8_t sta_mac[MWIFI_ADDR_LEN] = { 0 };
+    mesh_addr_t parent_mac = { 0 };
 
-static void node_write_temp(void *arg)
-{
+    MDF_LOGI("Node task is running");
+
+    esp_wifi_get_mac(ESP_IF_WIFI_STA, sta_mac);
+
     DHT11_init(PIN_DHT11);
+
     for (;;) {
         if (!mwifi_is_connected() || !mwifi_get_root_status()) {
             vTaskDelay(500 / portTICK_RATE_MS);
             continue;
         }
-	advertise_temperature();
-	vTaskDelay(500 / portTICK_RATE_MS);
+
+        /**
+         * @brief Send device information to mqtt server throught root node.
+         */
+        esp_mesh_get_parent_bssid(&parent_mac);
+	struct dht11_reading r = DHT11_read();
+	if (r.status != 0) {
+	    MDF_LOGW("DHT11 read failed");
+            vTaskDelay(500 / portTICK_RATE_MS);
+	    continue;
+	}
+        size = asprintf(&data, "{\"type\":\"env\", \"tempc\": %d, \"humidity\": %d}",
+			r.temperature, r.humidity);
+
+        MDF_LOGD("Node send, size: %d, data: %s", size, data);
+        ret = mwifi_write(NULL, &data_type, data, size, true);
+        MDF_FREE(data);
+        MDF_ERROR_CONTINUE(ret != MDF_OK, "<%s> mwifi_write", mdf_err_to_name(ret));
+
+        vTaskDelay(3000 / portTICK_RATE_MS);
     }
+
+    MDF_LOGW("Node task is exit");
+    vTaskDelete(NULL);
 }
 
 /**
@@ -364,7 +391,7 @@ void app_mqtt()
      */
     xTaskCreate(node_write_task, "node_write_task", 4 * 1024, NULL, CONFIG_MDF_TASK_DEFAULT_PRIOTY, NULL);
     xTaskCreate(node_read_task,  "node_read_task",  4 * 1024, NULL, CONFIG_MDF_TASK_DEFAULT_PRIOTY, NULL);
-    xTaskCreate(node_write_temp, "node_write_temp", 4 * 1024, NULL, CONFIG_MDF_TASK_DEFAULT_PRIOTY, NULL);
+    xTaskCreate(node_env_task, "node_env_task", 4 * 1024, NULL, CONFIG_MDF_TASK_DEFAULT_PRIOTY, NULL);
 
     TimerHandle_t timer = xTimerCreate("print_system_info", 10000 / portTICK_RATE_MS,
                                        true, NULL, print_system_info_timercb);
